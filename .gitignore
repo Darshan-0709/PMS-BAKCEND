@@ -1,0 +1,40 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.test
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Jest coverage
+coverage/
+jest-coverage/
+
+# Prisma generated files & local DB
+prisma/migrations/
+prisma/dev.db
+prisma/dev.db-journal
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE-specific
+.vscode/
+.idea/
+
+# Nodemon
+nodemon-debug.log
