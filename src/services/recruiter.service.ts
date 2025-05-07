@@ -5,6 +5,13 @@ import { RecruiterUpdateInput } from "../validators/recruiter.validator";
 export const getRecruiterById = async (recruiterId: string) => {
     const recruiter = await prisma.recruiter.findUnique({
         where: { recruiterId },
+        select: {
+            companyName: true,
+            representativePosition: true,
+            description: true,
+            website: true,
+            companyEmail: true,
+        },
     });
     if (!recruiter) {
         throw new ValidationError({ recruiterId: "Recruiter not found" });

@@ -13,6 +13,23 @@ import { ResponseHandler } from "./utils/apiResponse";
 import { NotFoundError } from "./errors/NotFoundError";
 import { RateLimitError } from "./errors/RateLimitError";
 import prisma from "./config/prisma";
+import winston from "winston";
+
+// Logger Configuration
+const logger = winston.createLogger({
+    level: "info",
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(
+            ({ timestamp, level, message }) =>
+                `${timestamp} [${level}]: ${message}`
+        )
+    ),
+    transports: [
+        new winston.transports.Console(),
+        new winston.transports.File({ filename: "logs/app.log" }),
+    ],
+});
 
 const app = express();
 
@@ -61,9 +78,9 @@ app.use(errorHandler);
 // Database Connection
 prisma
     .$connect()
-    .then(() => console.log("Connected to PostgreSQL"))
+    .then(() => logger.info("Connected to PostgreSQL"))
     .catch((err: Error) => {
-        console.error("Database connection error:", err);
+        logger.error(`Database connection error: ${err.message}`);
         process.exit(1);
     });
 

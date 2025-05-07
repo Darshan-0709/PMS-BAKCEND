@@ -5,10 +5,39 @@ import { StudentUpdateInput } from "../validators/student.validator";
 export const getStudentById = async (studentId: string) => {
     const student = await prisma.student.findUnique({
         where: { studentId },
+        select: {
+            studentId: true,
+            enrollmentNumber: true,
+            fullName: true,
+            cgpa: true,
+            bachelorsGpa: true,
+            tenthPercentage: true,
+            twelfthPercentage: true,
+            diplomaPercentage: true,
+            backlogs: true,
+            liveBacklogs: true,
+            placementStatus: true,
+            resumeUrl: true,
+            isVerifiedByPlacementCell: true,
+            degree: {
+                select: {
+                    degreeId: true,
+                    name: true,
+                },
+            },
+            placement_cell: {
+                select: {
+                    placementCellId: true,
+                    placementCellName: true,
+                },
+            },
+        },
     });
+
     if (!student) {
         throw new ValidationError({ studentId: "Student not found" });
     }
+
     return student;
 };
 

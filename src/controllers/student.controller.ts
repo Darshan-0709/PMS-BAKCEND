@@ -39,8 +39,7 @@ export const getStudentsController = async (
         if (req.user?.role !== "placement_cell") {
             throw new UnauthorizedError(ErrorMessage.UNAUTHORIZED);
         }
-
-        const placementCellUser = req.user as PlacementCellContext; // Narrow the type
+        const placementCellUser = req.user;
         const placementCellId = placementCellUser.placementCellId; // Safe to access after narrowing
         const page = parseInt(req.query.page as string) || 1;
         const pageSize = 10;
@@ -73,6 +72,7 @@ export const updateStudentController = async (
     next: NextFunction
 ) => {
     try {
+        console.log("updateStudent")
         const { id } = studentIdSchema.parse(req.params);
         const validatedData = studentUpdateSchema.parse(req.body);
         const student = await updateStudent(id, validatedData);

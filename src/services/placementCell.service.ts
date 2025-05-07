@@ -5,12 +5,39 @@ import { PlacementCellUpdateInput } from "../validators/placementCell.validator"
 export const getPlacementCellById = async (placementCellId: string) => {
     const placementCell = await prisma.placementCell.findUnique({
         where: { placementCellId },
+        select: {
+            branch: {
+                select: {
+                    branchId: true,
+                    name: true,
+                },
+            },
+            placementCellEmail: true,
+            website: true,
+            placementCellDegrees: {
+                select: {
+                    degree: {
+                        select: {
+                            degreeId: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
+            placementCellDomains: {
+                select: {
+                    domain: true,
+                },
+            },
+        },
     });
+
     if (!placementCell) {
         throw new ValidationError({
             placementCellId: "Placement cell not found",
         });
     }
+
     return placementCell;
 };
 

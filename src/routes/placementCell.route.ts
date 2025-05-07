@@ -11,7 +11,7 @@ import { authGuard } from "../auth/auth.guard";
 const router = Router();
 
 router.get("/:id", authGuard, getPlacementCellController);
-router.put(
+router.patch(
     "/:id",
     authGuard,
     authorizePlacementCell,
