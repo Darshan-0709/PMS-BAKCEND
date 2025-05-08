@@ -11,7 +11,8 @@ export const placementCellUpdateSchema = z.object({
         .optional(),
     placementCellEmail: z.string().email("Invalid email address").optional(),
     website: z.string().url("Invalid website URL").optional(),
-    isVerified: z.boolean().optional(),
+    domains: z.array(z.string().min(1, "Domain cannot be empty")).optional(),
+    degrees: z.array(z.string().uuid("Invalid degree ID")).optional(),
 });
 
 export type PlacementCellUpdateInput = z.infer<

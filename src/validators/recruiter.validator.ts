@@ -6,6 +6,10 @@ export const recruiterIdSchema = z.object({
 
 export const recruiterUpdateSchema = z.object({
     companyName: z.string().min(1, "Company name is required").optional(),
+    representativePosition: z
+        .string()
+        .min(1, "Representative position is required")
+        .optional(),
     description: z.string().optional(),
     website: z.string().url("Invalid website URL").optional(),
     companyEmail: z.string().email("Invalid email address").optional(),

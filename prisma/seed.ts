@@ -11,7 +11,18 @@ const branches = [
     "Electrical",
 ];
 
-const degrees = ["B.Tech", "M.Tech", "MBA", "MCA", "BBA"];
+const degrees = [
+    "B.Tech",
+    "M.Tech",
+    "MBA",
+    "MCA",
+    "BBA",
+    "Ph.D",
+    "B.Sc",
+    "M.Sc",
+    "BCA",
+    "B.E",
+];
 
 const placementCellNames = [
     "TechPlace Cell",
@@ -22,11 +33,11 @@ const placementCellNames = [
 ];
 
 const placementCellDomains = [
-    ["@techplace.edu.in", "@techplace.ac.in"],
-    ["@careerconnect.edu.in", "@careerconnect.ac.in"],
-    ["@futureleaders.edu.in", "@futureleaders.ac.in"],
-    ["@procareer.edu.in", "@procareer.ac.in"],
-    ["@jobbridge.edu.in", "@jobbridge.ac.in"],
+    ["techplace.edu.in", "techplace.ac.in"],
+    ["careerconnect.edu.in", "careerconnect.ac.in"],
+    ["futureleaders.edu.in", "futureleaders.ac.in"],
+    ["procareer.edu.in", "procareer.ac.in"],
+    ["jobbridge.edu.in", "jobbridge.ac.in"],
 ];
 
 const companyNames = [
@@ -64,7 +75,7 @@ async function main() {
         const adminUser = await prisma.user.create({
             data: {
                 username: `pcadmin${i + 1}`,
-                email: `admin${i + 1}${placementCellDomains[i][0]}`,
+                email: `admin${i + 1}@${placementCellDomains[i][0]}`,
                 password: hashedPassword,
                 role: Role.placement_cell,
                 isActive: true,
@@ -85,9 +96,8 @@ async function main() {
         const placementCell = await prisma.placementCell.create({
             data: {
                 placementCellName: placementCellNames[i],
-                domains: placementCellDomains[i],
                 isVerified: true,
-                placementCellEmail: `contact${placementCellDomains[i][0]}`,
+                placementCellEmail: `contact@${placementCellDomains[i][0]}`,
                 website: `https://${placementCellNames[i].toLowerCase().replace(/\s+/g, "")}.com`,
                 adminId: adminUser.userId,
                 branchId: branch!.branchId,
@@ -98,7 +108,7 @@ async function main() {
                 },
                 placementCellDomains: {
                     create: placementCellDomains[i].map((domain) => ({
-                        domain: domain.substring(1), // Remove @ from the domain
+                        domain: domain,
                     })),
                 },
             },
@@ -115,7 +125,7 @@ async function main() {
             const studentUser = await prisma.user.create({
                 data: {
                     username: `student${studentNumber}`,
-                    email: `student${studentNumber}${studentDomain}`,
+                    email: `student${studentNumber}@${studentDomain}`,
                     password: hashedPassword,
                     role: Role.student,
                     isActive: true,

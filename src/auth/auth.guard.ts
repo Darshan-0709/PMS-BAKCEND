@@ -15,7 +15,6 @@ export const authGuard = async (
         if (!token) {
             throw new UnauthorizedError(ErrorMessage.UNAUTHORIZED);
         }
-        console.log("token", token);
         if (!process.env.TOKEN_KEY) {
             throw new Error("JWT secret key is not configured");
         }

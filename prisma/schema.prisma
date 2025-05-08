@@ -75,7 +75,6 @@ model Student {
 model PlacementCell {
   placementCellId    String    @id @default(uuid()) @map("placement_cell_id")
   placementCellName  String    @unique @db.VarChar(100)
-  domains            String[]  @db.Text // List of allowed email domains (e.g. ["@edu.in", "@college.edu"]) for student email verification
   isVerified         Boolean   @default(false) @map("is_verified")
   placementCellEmail String?   @db.VarChar(100)
   website            String?   @db.VarChar(100)

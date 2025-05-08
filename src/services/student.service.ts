@@ -48,6 +48,33 @@ export const getStudentsByPlacementCell = async (
 ) => {
     const students = await prisma.student.findMany({
         where: { placementCellId },
+        select: {
+            studentId: true,
+            enrollmentNumber: true,
+            fullName: true,
+            cgpa: true,
+            bachelorsGpa: true,
+            tenthPercentage: true,
+            twelfthPercentage: true,
+            diplomaPercentage: true,
+            backlogs: true,
+            liveBacklogs: true,
+            placementStatus: true,
+            resumeUrl: true,
+            isVerifiedByPlacementCell: true,
+            degree: {
+                select: {
+                    degreeId: true,
+                    name: true,
+                },
+            },
+            placement_cell: {
+                select: {
+                    placementCellId: true,
+                    placementCellName: true,
+                },
+            },
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
     });

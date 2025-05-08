@@ -14,4 +14,5 @@ export enum ErrorCode {
     // File Errors
     FILE_TOO_LARGE = "FILE_TOO_LARGE",
     INVALID_FILE_TYPE = "INVALID_FILE_TYPE",
+    BAD_REQUEST = "BAD_REQUEST",
 }

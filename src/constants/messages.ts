@@ -23,4 +23,5 @@ export const ErrorMessage: Record<ErrorCode, string> = {
     [ErrorCode.INVALID_FILE_TYPE]: "Invalid file type",
     [ErrorCode.TOO_MANY_REQUESTS]: "Too many requests from this IP",
     [ErrorCode.TOKEN_MISSING]: "Access token is missing or invalid.",
+    [ErrorCode.BAD_REQUEST]: "Bad request",
 };

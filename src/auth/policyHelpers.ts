@@ -8,6 +8,9 @@ import {
     Prisma,
 } from "@prisma/client";
 import { UserContext } from "./userContext";
+import { UnauthorizedError } from "../errors/UnauthorizedError";
+import { ForbiddenError } from "../errors/ForbiddenError";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const prisma = new PrismaClient();
 
@@ -155,15 +158,13 @@ export function authorize<Res extends Resource>(
     return async (req: Request, res: Response, next: NextFunction) => {
         const user = req.user;
         if (!user) {
-            res.status(401).json({ message: "Unauthorized" });
-            return;
+            throw new UnauthorizedError("Unauthorized");
         }
 
         const roleRules = policies[user.role]?.[resource];
         const policyFn = roleRules?.[action] as PolicyFn<Res> | undefined;
         if (!policyFn) {
-            res.status(403).json({ message: "Forbidden" });
-            return;
+            throw new ForbiddenError("Forbidden");
         }
 
         let record: ResourceMap[Res] | undefined;
@@ -199,12 +200,10 @@ export function authorize<Res extends Resource>(
                     if (result) record = result as ResourceMap[Res];
                     break;
                 }
-                // Add more cases as needed for future resources
             }
 
             if (!record) {
-                res.status(404).json({ message: `${resource} not found` });
-                return;
+                throw new NotFoundError();
             }
         }
 
@@ -222,8 +221,7 @@ export function authorize<Res extends Resource>(
 
         const allowed = await policyFn(context);
         if (!allowed) {
-            res.status(403).json({ message: "Forbidden" });
-            return;
+            throw new ForbiddenError("Forbidden");
         }
         next();
     };
@@ -231,6 +229,9 @@ export function authorize<Res extends Resource>(
 
 // Helper predicates - updated to use the new context object
 export const ownStudent: PolicyFn<"Student"> = ({ user, resource }) =>
+    user.role === "student" && resource?.studentId === user.userId;
+
+export const updateOwnStudent: PolicyFn<"Student"> = ({ user, resource }) =>
     user.role === "student" && resource?.studentId === user.userId;
 
 export const inCell: PolicyFn<"Student"> = ({ user, resource }) =>
@@ -268,7 +269,60 @@ export const recruiterCanViewStudentApplications: PolicyFn<"Student"> = async ({
 };
 
 // Type definitions for student attributes that can be updated
-type StudentAttrs = Partial<Pick<Student, "fullName" | "cgpa" | "resumeUrl">>;
+type StudentAttrs = Partial<
+    Pick<
+        Student,
+        | "fullName"
+        | "cgpa"
+        | "bachelorsGpa"
+        | "tenthPercentage"
+        | "twelfthPercentage"
+        | "diplomaPercentage"
+        | "backlogs"
+        | "liveBacklogs"
+        | "resumeUrl"
+        | "enrollmentNumber"
+        | "placementStatus"
+        | "isVerifiedByPlacementCell"
+        | "degreeId"
+    >
+>;
+
+// Helper function to validate student update attributes
+function validateStudentUpdate(
+    attrs: StudentAttrs | undefined,
+    isVerified: boolean,
+    isPlacementCell: boolean
+): boolean {
+    if (!attrs) return false;
+
+    const keys = Object.keys(attrs) as (keyof StudentAttrs)[];
+
+    if (isPlacementCell) {
+        // Placement cell can update all fields
+        return true;
+    }
+
+    if (isVerified) {
+        // Verified students can only update resumeUrl
+        return keys.length === 1 && keys[0] === "resumeUrl";
+    }
+
+    // Unverified students can only update specific fields
+    const allowedFields = [
+        "fullName",
+        "cgpa",
+        "bachelorsGpa",
+        "tenthPercentage",
+        "twelfthPercentage",
+        "diplomaPercentage",
+        "backlogs",
+        "liveBacklogs",
+        "resumeUrl",
+    ];
+
+    return keys.every((key) => allowedFields.includes(key));
+}
 
 // Register policies at startup
 definePolicy("student", {
@@ -280,14 +334,12 @@ definePolicy("student", {
             // Students can only update their own profile
             if (!ownStudent(context)) return false;
 
-            // If student is placed, they can only update resume
-            if (resource?.placementStatus === "placed") {
-                const keys = Object.keys(attrs ?? {}) as (keyof StudentAttrs)[];
-                return keys.every((key) => key === "resumeUrl");
-            }
-
-            // Otherwise, they can update any field
-            return true;
+            // Validate the update attributes based on verification status
+            return validateStudentUpdate(
+                attrs,
+                resource?.isVerifiedByPlacementCell ?? false,
+                false
+            );
         },
         delete: () => false,
     },
@@ -296,17 +348,49 @@ definePolicy("student", {
     },
 });
 
+export const placementCellCanUpdateOwnDetails: PolicyFn<
+    "PlacementCell"
+> = async ({ user, resource, attrs }) => {
+    if (user.role !== "placement_cell") return false;
+
+    if (resource?.adminId !== user.userId) return false;
+
+    // Check for restricted fields
+    if (attrs) {
+        const restrictedFields = ["branchId", "adminId", "isVerified"];
+        const keys = Object.keys(attrs);
+
+        // If any restricted field is being updated, deny access
+        if (restrictedFields.some((field) => keys.includes(field))) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
 definePolicy("placement_cell", {
     Student: {
         read: inCell,
-        update: inCell,
-        delete: inCell, // Placement cell can delete students within their cell
+        update: async (context) => {
+            const { user, resource, attrs } = context;
+
+            // Placement cell can only update students in their cell
+            if (!inCell(context)) return false;
+
+            // Validate the update attributes
+            return validateStudentUpdate(
+                attrs,
+                resource?.isVerifiedByPlacementCell ?? false,
+                true
+            );
+        },
+        delete: inCell,
     },
     PlacementCell: {
         read: ({ user, resource }) =>
             user.role === "placement_cell" && resource?.adminId === user.userId,
-        update: ({ user, resource }) =>
-            user.role === "placement_cell" && resource?.adminId === user.userId,
+        update: placementCellCanUpdateOwnDetails,
         delete: ({ user, resource }) =>
             user.role === "placement_cell" && resource?.adminId === user.userId,
     },
