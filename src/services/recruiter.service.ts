@@ -1,6 +1,6 @@
 import prisma from "../config/prisma";
 import { ValidationError } from "../errors/ValidationError";
-import { RecruiterUpdateInput } from "../validators/recruiter.validator";
+import { RecruiterUpdateData } from "../validators/recruiter.validator";
 
 export const getRecruiterById = async (recruiterId: string) => {
     // select public fields
@@ -23,7 +23,7 @@ export const getRecruiterById = async (recruiterId: string) => {
 
 export const updateRecruiter = async (
     recruiterId: string,
-    data: RecruiterUpdateInput
+    data: RecruiterUpdateData
 ) => {
     // Check if recruiter exists
     const existingRecruiter = await prisma.recruiter.findUnique({

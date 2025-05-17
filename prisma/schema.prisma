@@ -127,6 +127,7 @@ model Degree {
 
   @@map("degrees")
 }
+
 model PlacementCellDegree {
   id              String @id @default(uuid())
   placementCellId String @map("placement_cell_id")
@@ -135,6 +136,7 @@ model PlacementCellDegree {
   placementCell PlacementCell @relation(fields: [placementCellId], references: [placementCellId])
   degree        Degree        @relation(fields: [degreeId], references: [degreeId])
 
+  @@unique([placementCellId, degreeId])
   @@map("placement_cell_degrees")
 }
 
