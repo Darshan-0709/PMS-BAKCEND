@@ -6,10 +6,10 @@ import { ErrorCode } from "../constants/errorCodes";
 export class UnauthorizedError extends AppError {
     readonly statusCode = HttpStatus.UNAUTHORIZED;
     readonly errors = {
-        [ErrorCode.TOKEN_MISSING]: ErrorMessage.TOKEN_MISSING,
+        [ErrorCode.UNAUTHORIZED]: ErrorMessage.UNAUTHORIZED,
     };
 
-    constructor(message = ErrorMessage.TOKEN_MISSING) {
+    constructor(message = ErrorMessage.UNAUTHORIZED) {
         super(message);
     }
 }

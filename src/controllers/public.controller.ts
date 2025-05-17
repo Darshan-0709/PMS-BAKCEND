@@ -50,7 +50,7 @@ export const getPlacementCellForStudentRegister = async (
     try {
         const branchParam = req.query.branch as string | undefined;
 
-        const placementCellsRaw = await prisma.placementCell.findMany({
+        const placementCells = await prisma.placementCell.findMany({
             where: branchParam ? { branchId: branchParam } : undefined,
             select: {
                 placementCellId: true,
@@ -79,7 +79,7 @@ export const getPlacementCellForStudentRegister = async (
             },
         });
 
-        const placementCells = placementCellsRaw.map((cell) => ({
+        const placementCellsFlatten = placementCells.map((cell) => ({
             ...cell,
             placementCellDegrees: cell.placementCellDegrees.map(
                 (d) => d.degree
@@ -89,8 +89,7 @@ export const getPlacementCellForStudentRegister = async (
             ),
         }));
 
-        console.log(placementCells);
-        ResponseHandler.fetched(res, placementCells);
+        ResponseHandler.fetched(res, placementCellsFlatten);
     } catch (err) {
         next(err);
     }
