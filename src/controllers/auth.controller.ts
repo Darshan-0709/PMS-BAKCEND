@@ -6,7 +6,7 @@ import {
 import { ResponseHandler } from "../utils/apiResponse";
 import {
     registerUser,
-    validateUsernameAndEmail,
+    validateUserData,
     login,
 } from "../services/auth.service";
 import { SuccessMessage } from "../constants/messages";
@@ -18,9 +18,9 @@ export const validateUserInput = async (
 ) => {
     try {
         const data = userValidationSchema.parse(req.body);
-        const { username, email } = data;
+        const { username, email, password, confirmPassword} = data;
 
-        await validateUsernameAndEmail(username, email);
+        await validateUserData(username, email, password, confirmPassword);
 
         ResponseHandler.fetched(res, SuccessMessage.VALIDATION_SUCCESSFUL);
     } catch (error) {
@@ -35,9 +35,7 @@ export const registerController = async (
 ) => {
     try {
         const validatedData = registerValidationSchema.parse(req.body);
-
         const result = await registerUser(validatedData);
-
         ResponseHandler.created(res, result, SuccessMessage.USER_REGISTERED);
     } catch (error) {
         next(error);

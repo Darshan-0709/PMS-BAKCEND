@@ -1,15 +1,15 @@
 import { AppError } from "./AppError";
 import { HttpStatus } from "../constants/httpStatusCodes";
 import { ErrorMessage } from "../constants/messages";
+import { ErrorCode } from "../constants/errorCodes";
 
 export class ForbiddenError extends AppError {
-    statusCode = HttpStatus.FORBIDDEN;
-    errors?: Record<string, string>;
+    readonly statusCode = HttpStatus.FORBIDDEN;
+    readonly errors = {
+        [ErrorCode.FORBIDDEN]: ErrorMessage.FORBIDDEN,
+    };
 
     constructor(message: string = ErrorMessage.FORBIDDEN) {
-        super(message);
-        this.errors = {
-            message,
-        };
+        super(message)
     }
 }

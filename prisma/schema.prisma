@@ -127,7 +127,6 @@ model Degree {
 
   @@map("degrees")
 }
-
 model PlacementCellDegree {
   id              String @id @default(uuid())
   placementCellId String @map("placement_cell_id")

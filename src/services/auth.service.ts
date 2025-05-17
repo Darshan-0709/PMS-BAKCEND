@@ -13,10 +13,14 @@ import {
 import { ValidationError } from "../errors/ValidationError";
 import { Response } from "express"; // Ensure this is imported
 
-export const validateUsernameAndEmail = async (
-    username: string,
-    email: string
-) => {
+export const validateUserData = async (username: string, email: string, password: string, confirmPassword: string) => {
+
+    if(password !== confirmPassword){
+        throw new ValidationError({
+            confirmPassword: "Passwords do not match"
+        });
+    }
+    
     const existingUser = await prisma.user.findFirst({
         where: {
             OR: [{ email }, { username }],
@@ -42,7 +46,8 @@ type ProcessedRegisterInput = Omit<RegisterInput, "password"> & {
 };
 
 export const registerUser = async (userData: RegisterInput) => {
-    const { username, email, role, password } = userData;
+    const { username, email, role, password, confirmPassword} = userData;
+    await validateUserData(username, email, password, confirmPassword);
     const saltRounds = 10;
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -52,7 +57,6 @@ export const registerUser = async (userData: RegisterInput) => {
         password: hashedPassword,
     };
 
-    await validateUsernameAndEmail(username, email);
 
     switch (role) {
         case "student": {
@@ -168,12 +172,13 @@ const validatePlacementCellData = async (
         });
     }
 
-    let branch = await prisma.branch.findUnique({
-        where: { name: placementCellBranch },
+    let dbBranch = await prisma.branch.findUnique({
+        where: { branchId: placementCellBranch },
     });
-    if (!branch) {
-        branch = await prisma.branch.create({
-            data: { name: placementCellBranch },
+
+    if (!dbBranch) {
+        throw new ValidationError({
+            placementCellBranch: `Branch '${placementCellBranch}' does not exist`,
         });
     }
 
@@ -181,18 +186,19 @@ const validatePlacementCellData = async (
 
     for (const degreeName of placementCellDegrees) {
         let degree = await prisma.degree.findUnique({
-            where: { name: degreeName },
+            where: { degreeId: degreeName },
         });
 
         if (!degree) {
-            degree = await prisma.degree.create({
-                data: { name: degreeName },
+            throw new ValidationError({
+                placementCellDegrees: `Degree '${degreeName}' does not exist`,
             });
         }
-        dbDegrees.push({ degreeId: degree.degreeId, name: degree.name });
+
+        dbDegrees.push(degree);
     }
 
-    return { branch, degrees: dbDegrees };
+    return { dbBranch, dbDegrees };
 };
 
 const registerStudent = async (
@@ -263,16 +269,16 @@ const registerPlacementCell = async (
     const {
         placementCellName,
         domains,
-        branchName,
-        degreeNames,
+        branchId,
+        degrees,
         website,
         placementCellEmail,
     } = placementCellProfileData;
 
-    const { branch, degrees } = await validatePlacementCellData(
+    const { dbBranch, dbDegrees } = await validatePlacementCellData(
         placementCellName,
-        branchName,
-        degreeNames
+        branchId,
+        degrees
     );
 
     const result = await prisma.$transaction(async (prisma) => {
@@ -289,7 +295,7 @@ const registerPlacementCell = async (
             data: {
                 adminId: user.userId,
                 placementCellName,
-                branchId: branch.branchId,
+                branchId: dbBranch.branchId,
                 placementCellEmail,
                 website,
             },
@@ -304,7 +310,7 @@ const registerPlacementCell = async (
 
         if (degrees.length > 0) {
             await prisma.placementCellDegree.createMany({
-                data: degrees.map((degree) => ({
+                data: dbDegrees.map((degree) => ({
                     placementCellId: placementCell.placementCellId,
                     degreeId: degree.degreeId,
                 })),

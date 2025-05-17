@@ -16,26 +16,34 @@ export const errorHandler = (
     if (err instanceof AppError) {
         finalError = err;
     } else if (err instanceof ZodError) {
-        const formattedErrors = handleZodError(err);
-        finalError = new ValidationError(formattedErrors);
+        finalError = formatZodError(err);
     } else {
         finalError = new InternalServerError(err as Error);
     }
-
     ResponseHandler.error(res, finalError);
 };
 
-export function handleZodError(error: ZodError): Record<string, string> {
-    const formatted: Record<string, string> = {};
+/**
+ * Flattens ZodError into a key-message object.
+ * For union schemas, only the leaf field name is retained.
+ */
+export function formatZodError(error: ZodError): ValidationError {
+  const issues = error.issues;
 
-    error.issues.forEach((issue) => {
-        const path = issue.path.join(".");
-        formatted[path] = issue.message;
-    });
+  const formatted: Record<string, string> = {};
 
-    if (process.env.NODE_ENV === "development") {
-        console.error("Validation failed with errors:", formatted);
+  for (const issue of issues) {
+    const path = issue.path;
+
+    if (path.length === 0) continue; // Skip global errors
+
+    // Get only the leaf field name (e.g., "enrollmentNumber" instead of "studentProfileData.enrollmentNumber")
+    const key = path[path.length - 1]?.toString();
+
+    if (!formatted[key]) {
+      formatted[key] = issue.message;
     }
+  }
 
-    return formatted;
+  return new ValidationError(formatted);
 }

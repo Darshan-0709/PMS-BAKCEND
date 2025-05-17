@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 
 import { Request } from "express";
-import { UserContext } from "src/auth/userContext";
+import { UserContext } from "../auth/userContext";
 export interface IGetUserAuthInfoRequest extends Request {
     user: UserContext;
 }
@@ -9,6 +9,7 @@ export interface RegisterBaseData {
     email: string;
     username: string;
     password: string;
+    confirmPassword: string,
     role: Role;
 }
 
@@ -23,11 +24,11 @@ export interface StudentProfileData {
 // Placement cell profile data
 export interface PlacementCellProfileData {
     placementCellName: string;
-    domains: string[];
-    branchName: string;
-    degreeNames: string[];
     placementCellEmail: string;
     website: string;
+    branchId: string;
+    domains: string[];
+    degrees: string[];
 }
 
 // Recruiter profile data
