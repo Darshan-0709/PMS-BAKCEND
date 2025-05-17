@@ -33,11 +33,11 @@ const placementCellNames = [
 ];
 
 const placementCellDomains = [
-    ["techplace.edu.in", "techplace.ac.in"],
-    ["careerconnect.edu.in", "careerconnect.ac.in"],
-    ["futureleaders.edu.in", "futureleaders.ac.in"],
-    ["procareer.edu.in", "procareer.ac.in"],
-    ["jobbridge.edu.in", "jobbridge.ac.in"],
+    ["@techplace.edu.in", "@techplace.ac.in"],
+    ["@careerconnect.edu.in", "@careerconnect.ac.in"],
+    ["@futureleaders.edu.in", "@futureleaders.ac.in"],
+    ["@procareer.edu.in", "@procareer.ac.in"],
+    ["@jobbridge.edu.in", "@jobbridge.ac.in"],
 ];
 
 const companyNames = [

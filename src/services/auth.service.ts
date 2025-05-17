@@ -136,7 +136,7 @@ const validateStudentData = async (studentData: {
     }
 
     const domainAllowed = placementCell.placementCellDomains.some(
-        (placementCellDomain) => placementCellDomain.domain === studentDomain
+        (placementCellDomain) => {console.log(placementCellDomain.domain, studentDomain);return placementCellDomain.domain === studentDomain}
     );
 
     if (!domainAllowed) {
