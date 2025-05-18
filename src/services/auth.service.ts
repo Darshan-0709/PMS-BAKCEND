@@ -173,7 +173,7 @@ const validatePlacementCellData = async (
     }
 
     let dbBranch = await prisma.branch.findUnique({
-        where: { branchId: placementCellBranch },
+        where: { name: placementCellBranch },
     });
 
     if (!dbBranch) {
@@ -186,7 +186,7 @@ const validatePlacementCellData = async (
 
     for (const degreeName of placementCellDegrees) {
         let degree = await prisma.degree.findUnique({
-            where: { degreeId: degreeName },
+            where: { name: degreeName },
         });
 
         if (!degree) {

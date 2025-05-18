@@ -24,7 +24,7 @@ const studentRegisterSchema = z
     degreeId: z.string().min(1, "Degree ID is required"),
     placementCellId: z.string().min(1, "Placement cell ID is required"),
   })
-  .strict();
+  .strip();
 
 // ─── Placement Cell Profile Schema ───────────────────────────────────────────
 // Based on Prisma PlacementCell model + nested domain/degree lists
@@ -41,7 +41,7 @@ const placementCellRegisterSchema = z
       .array(z.string().min(1))
       .min(1, "At least one degree ID is required"),
   })
-  .strict();
+  .strip();
 
 // ─── Recruiter Profile Schema ────────────────────────────────────────────────
 // Based on Prisma Recruiter model
@@ -55,7 +55,7 @@ const recruiterRegisterSchema = z
     website: z.string().url("Invalid website URL"),
     companyEmail: z.string().email("Invalid company email"),
   })
-  .strict();
+  .strip();
 
 // ─── Combined Registration Schema ─────────────────────────────────────────────
 export const registerValidationSchema = z.discriminatedUnion("role", [

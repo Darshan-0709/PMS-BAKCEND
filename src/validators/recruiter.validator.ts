@@ -12,6 +12,6 @@ export const recruiterUpdateSchema = z.object({
         .min(1, "Representative position is required"),
     description: z.string(),
     website: z.string().url("Invalid website URL"),
-}).strict() 
+}).strip() 
 
 export type RecruiterUpdateData = z.infer<typeof recruiterUpdateSchema>;

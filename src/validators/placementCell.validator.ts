@@ -17,6 +17,6 @@ export const placementCellUpdateSchema = z
             .array(z.string().uuid("Invalid degree ID"))
             .min(1, "At least one degree ID is required"),
     })
-    .strict();
+    .strip();
 
 export type PlacementCellUpdateData = z.infer<typeof placementCellUpdateSchema>;

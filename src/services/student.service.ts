@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, Student } from "@prisma/client";
 import prisma from "../config/prisma";
 import { ValidationError } from "../errors/ValidationError";
 import { StudentUpdateInput } from "../validators/student.validator";
@@ -123,7 +123,7 @@ async function validateStudentUpdate(
     tx: Prisma.TransactionClient,
     studentId: string,
     data: StudentUpdateInput
-): Promise<{ student: any; allowedFields: (keyof StudentAttrs)[] }> {
+): Promise<{ student: Student; allowedFields: (keyof StudentAttrs)[] }> {
     // 1. Check student exists (excluding soft-deleted)
     const student = await tx.student.findUnique({
         where: {

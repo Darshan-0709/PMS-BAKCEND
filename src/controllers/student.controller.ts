@@ -14,7 +14,6 @@ import {
 import { ResponseHandler } from "../utils/apiResponse";
 import { UnauthorizedError } from "../errors/UnauthorizedError";
 import { ErrorMessage } from "../constants/messages";
-import { PlacementCellContext } from "../auth/userContext";
 
 export const getStudentController = async (
     req: Request,
