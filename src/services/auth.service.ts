@@ -9,7 +9,7 @@ import {
     RecruiterProfileData,
     RegisterInput,
     StudentProfileData,
-} from "../types/auth.types";
+} from "../types";
 import { ValidationError } from "../errors/ValidationError";
 import { Response } from "express"; // Ensure this is imported
 

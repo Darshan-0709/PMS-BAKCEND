@@ -11,6 +11,7 @@ import { UserContext } from "./userContext";
 import { UnauthorizedError } from "../errors/UnauthorizedError";
 import { ForbiddenError } from "../errors/ForbiddenError";
 import { NotFoundError } from "../errors/NotFoundError";
+import { StudentAttrs } from "../types";
 
 const prisma = new PrismaClient();
 
@@ -211,26 +212,6 @@ export const studentCanViewPlacementCell: PolicyFn<"PlacementCell"> = async ({
     return true;
 };
 
-// Type definitions for student attributes that can be updated
-type StudentAttrs = Partial<
-    Pick<
-        Student,
-        | "fullName"
-        | "cgpa"
-        | "bachelorsGpa"
-        | "tenthPercentage"
-        | "twelfthPercentage"
-        | "diplomaPercentage"
-        | "backlogs"
-        | "liveBacklogs"
-        | "resumeUrl"
-        | "enrollmentNumber"
-        | "placementStatus"
-        | "isVerifiedByPlacementCell"
-        | "degreeId"
-    >
->;
-
 // Helper function to validate student update attributes
 function validateStudentUpdate(
     attrs: StudentAttrs | undefined,
@@ -260,7 +241,6 @@ function validateStudentUpdate(
         "diplomaPercentage",
         "backlogs",
         "liveBacklogs",
-        "resumeUrl",
     ];
 
     return keys.every((key) => allowedFields.includes(key));

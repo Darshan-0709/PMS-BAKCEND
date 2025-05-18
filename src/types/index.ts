@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role, Student } from "@prisma/client";
 
 import { Request } from "express";
 import { UserContext } from "../auth/userContext";
@@ -30,6 +30,25 @@ export interface PlacementCellProfileData {
     domains: string[];
     degrees: string[];
 }
+
+export type StudentAttrs = Partial<
+    Pick<
+        Student,
+        | "fullName"
+        | "cgpa"
+        | "bachelorsGpa"
+        | "tenthPercentage"
+        | "twelfthPercentage"
+        | "diplomaPercentage"
+        | "backlogs"
+        | "liveBacklogs"
+        | "resumeUrl"
+        | "enrollmentNumber"
+        | "placementStatus"
+        | "isVerifiedByPlacementCell"
+        | "degreeId"
+    >
+>;
 
 // Recruiter profile data
 export interface RecruiterProfileData {

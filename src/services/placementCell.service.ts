@@ -7,7 +7,10 @@ import { Prisma } from "@prisma/client";
 
 export const getPlacementCellById = async (placementCellId: string) => {
     const placementCell = await prisma.placementCell.findUnique({
-        where: { placementCellId },
+        where: {
+            placementCellId,
+            deletedAt: null,
+        },
         select: {
             branch: {
                 select: {
@@ -62,7 +65,10 @@ async function validatePlacementCellUpdate(
     data: PlacementCellUpdateData
 ) {
     const existing = await tx.placementCell.findUnique({
-        where: { placementCellId: id },
+        where: {
+            placementCellId: id,
+            deletedAt: null,
+        },
         include: {
             placementCellDomains: { select: { domain: true } },
             placementCellDegrees: { select: { degreeId: true } },
@@ -72,17 +78,21 @@ async function validatePlacementCellUpdate(
         throw new NotFoundError("Placement cell not found");
     }
 
-    //Handle unique name constraint
-    const nameConflict = await tx.placementCell.findUnique({
-        where: { placementCellName: data.placementCellName },
+    // Handle unique name constraint
+    const nameConflict = await tx.placementCell.findFirst({
+        where: {
+            placementCellName: data.placementCellName,
+            placementCellId: { not: id },
+            deletedAt: null,
+        },
     });
-    if (nameConflict && nameConflict.placementCellId !== id) {
+    if (nameConflict) {
         throw new ValidationError({
             placementCellName: "This placement cell name is already in use.",
         });
     }
 
-    //Prevent degrees delete that still have students
+    // Prevent degrees delete that still have students
     await validateDegreeRemoval(
         tx,
         id,
@@ -95,7 +105,7 @@ async function validatePlacementCellUpdate(
 async function validateDegreeRemoval(
     tx: Prisma.TransactionClient,
     placementCellId: string,
-    currentDegrees: {degreeId: string}[],
+    currentDegrees: { degreeId: string }[],
     newDegrees: string[]
 ) {
     const currentDegreeIds = currentDegrees.map((d) => d.degreeId);
@@ -108,6 +118,7 @@ async function validateDegreeRemoval(
             where: {
                 placementCellId: placementCellId,
                 degreeId: { in: degreesToRemove },
+                deletedAt: null,
             },
         });
         if (impactedStudents) {
@@ -125,7 +136,10 @@ async function executeUpdate(
     data: PlacementCellUpdateData
 ) {
     return await tx.placementCell.update({
-        where: { placementCellId: id },
+        where: {
+            placementCellId: id,
+            deletedAt: null,
+        },
         data: {
             // Scalar fields
             placementCellName: data.placementCellName,
@@ -198,7 +212,10 @@ function buildDegreeUpdates(placementCellId: string, degrees: string[]) {
 
 export const softDeletePlacementCell = async (placementCellId: string) => {
     const placementCell = await prisma.placementCell.findUnique({
-        where: { placementCellId },
+        where: {
+            placementCellId,
+            deletedAt: null,
+        },
     });
     if (!placementCell) {
         throw new ValidationError({
