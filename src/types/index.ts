@@ -1,10 +1,5 @@
 import { Role, Student } from "@prisma/client";
 
-import { Request } from "express";
-import { UserContext } from "../auth/userContext";
-export interface IGetUserAuthInfoRequest extends Request {
-    user: UserContext;
-}
 export interface RegisterBaseData {
     email: string;
     username: string;

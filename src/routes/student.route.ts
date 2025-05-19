@@ -17,12 +17,7 @@ const router = Router();
 
 router.get("/:id", authGuard, authorizeStudent, getStudentController);
 router.get("/", authGuard, getStudentsController);
-router.patch(
-    "/:id",
-    authGuard,
-    authorizeStudentUpdate,
-    updateStudentController
-);
+router.put("/:id", authGuard, authorizeStudentUpdate, updateStudentController);
 router.delete(
     "/:id",
     authGuard,

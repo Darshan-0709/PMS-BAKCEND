@@ -6,6 +6,7 @@ import {
     Recruiter,
     Role,
     Prisma,
+    EligibilityCriteria,
 } from "@prisma/client";
 import { UserContext } from "./userContext";
 import { UnauthorizedError } from "../errors/UnauthorizedError";
@@ -18,7 +19,11 @@ const prisma = new PrismaClient();
 type Action = "read" | "create" | "update" | "delete";
 
 // Extend this type to add more resources as needed
-export type Resource = "Student" | "PlacementCell" | "Recruiter";
+export type Resource =
+    | "Student"
+    | "PlacementCell"
+    | "Recruiter"
+    | "EligibilityCriteria";
 
 // Map resource types to their Prisma model types
 // Extend this ResourceMap to add more resources as needed
@@ -26,6 +31,7 @@ type ResourceMap = {
     Student: Student;
     PlacementCell: PlacementCell;
     Recruiter: Recruiter;
+    EligibilityCriteria: EligibilityCriteria;
 };
 
 // Simplify context passing for related data lookup
@@ -95,6 +101,11 @@ async function createResourceLookup(_userCtx: UserContext) {
                     where: { recruiterId: id },
                 });
                 break;
+            case "EligibilityCriteria":
+                result = await prisma.eligibilityCriteria.findUnique({
+                    where: { criteriaId: id },
+                });
+                break;
             // Add more cases for other resources
         }
 
@@ -120,7 +131,7 @@ export function authorize<Res extends Resource>(
         const roleRules = policies[user.role]?.[resource];
         const policyFn = roleRules?.[action] as PolicyFn<Res> | undefined;
         if (!policyFn) {
-            throw new ForbiddenError();
+            throw new ForbiddenError("Not allowd");
         }
 
         let record: ResourceMap[Res] | undefined;
@@ -156,9 +167,20 @@ export function authorize<Res extends Resource>(
                     if (result) record = result as ResourceMap[Res];
                     break;
                 }
+                case "EligibilityCriteria": {
+                    const where: Prisma.EligibilityCriteriaWhereUniqueInput = {
+                        criteriaId: resourceId,
+                    };
+                    const result = await prisma.eligibilityCriteria.findUnique({
+                        where,
+                    });
+                    if (result) record = result as ResourceMap[Res];
+                    break;
+                }
             }
-
+            console.log("record", record);
             if (!record) {
+                console.log("record not found");
                 throw new NotFoundError();
             }
         }
@@ -174,10 +196,10 @@ export function authorize<Res extends Resource>(
             attrs: req.body as Partial<ResourceMap[Res]>,
             getRelatedResource,
         };
-
+        console.log("context", context);
         const allowed = await policyFn(context);
         if (!allowed) {
-            throw new ForbiddenError();
+            throw new ForbiddenError("nop");
         }
         next();
     };
@@ -210,6 +232,22 @@ export const studentCanViewPlacementCell: PolicyFn<"PlacementCell"> = async ({
     }
 
     return true;
+};
+
+// New policy helper for eligibility criteria
+export const ownEligibilityCriteria: PolicyFn<"EligibilityCriteria"> = async ({
+    user,
+    resource,
+    getRelatedResource,
+}) => {
+    if (user.role !== "recruiter") return false;
+
+    // Get the recruiter
+    const recruiter = await getRelatedResource("Recruiter", user.recruiterId);
+    if (!recruiter) return false;
+
+    // Check if the criteria belongs to this recruiter
+    return resource?.recruiterId === recruiter.recruiterId;
 };
 
 // Helper function to validate student update attributes
@@ -324,6 +362,12 @@ definePolicy("recruiter", {
         read: ownRecruiter,
         update: ownRecruiter,
         delete: ownRecruiter,
+    },
+    EligibilityCriteria: {
+        create: ({ user }) => user.role === "recruiter",
+        read: ownEligibilityCriteria,
+        update: ownEligibilityCriteria,
+        delete: ownEligibilityCriteria,
     },
 });
 

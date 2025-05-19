@@ -22,6 +22,18 @@ enum PlacementStatus {
   seeking
 }
 
+enum JobType {
+  full_time
+  part_time
+  internship
+}
+
+enum JobRequestStatus {
+  active
+  closed
+}
+
+
 model User {
   userId    String    @id @default(uuid()) @map("user_id")
   username  String    @db.VarChar(100)
@@ -124,6 +136,7 @@ model Degree {
   // Relations
   placementCellDegrees PlacementCellDegree[]
   Student              Student[]
+  JobRequestDegree     JobRequestDegree[]
 
   @@map("degrees")
 }
@@ -155,7 +168,65 @@ model Recruiter {
   representativeId String @unique @map("representative_id")
 
   // Relations
-  representative User @relation(fields: [representativeId], references: [userId])
+  representative      User                 @relation(fields: [representativeId], references: [userId])
+  eligibilityCriteria EligibilityCriteria[]
+  jobRequests         JobRequest[]
 
   @@map("recruiters")
+}
+
+model EligibilityCriteria {
+  criteriaId           String    @id @default(uuid()) @map("criteria_id")
+  recruiterId          String    @map("recruiter_id")
+  minCgpa              Decimal?  @map("min_cgpa") @db.Decimal(3, 2)
+  minBachelorsGpa      Decimal?  @map("min_bachelors_gpa") @db.Decimal(3, 2)
+  minTenthPercentage   Decimal?  @map("min_tenth_percentage") @db.Decimal(5, 2)
+  minTwelfthPercentage Decimal?  @map("min_twelfth_percentage") @db.Decimal(5, 2)
+  minDiplomaPercentage Decimal?  @map("min_diploma_percentage") @db.Decimal(5, 2)
+  maxBacklogs          Int?      @map("max_backlogs")
+  maxLiveBacklogs      Int?      @map("max_live_backlogs")
+  createdAt            DateTime? @default(now()) @map("created_at")
+  updatedAt            DateTime? @updatedAt @map("updated_at")
+  deletedAt            DateTime? @map("deleted_at")
+
+  // Relations
+  recruiter   Recruiter    @relation(fields: [recruiterId], references: [recruiterId])
+  jobRequests JobRequest[]
+
+  @@map("eligibility_criteria")
+}
+
+model JobRequest {
+  jobRequestId         String          @id @default(uuid()) @map("job_request_id")
+  recruiterId          String          @map("recruiter_id")
+  title                String          @db.VarChar(100)
+  description          String?         @db.Text
+  salary               Decimal?        @db.Decimal(10, 2)
+  location             String?         @db.VarChar(255)
+  jobType              JobType         @map("job_type")
+  eligibilityCriteriaId String         @map("eligibility_criteria_id")
+  status               JobRequestStatus @default(active)
+  createdAt            DateTime?       @default(now()) @map("created_at")
+  updatedAt            DateTime?       @updatedAt @map("updated_at")
+  deletedAt            DateTime?       @map("deleted_at")
+
+  // Relations
+  recruiter           Recruiter           @relation(fields: [recruiterId], references: [recruiterId])
+  eligibilityCriteria EligibilityCriteria @relation(fields: [eligibilityCriteriaId], references: [criteriaId])
+  allowedDegrees      JobRequestDegree[]
+
+  @@map("job_requests")
+}
+
+model JobRequestDegree {
+  id           String              @id @default(uuid())
+  jobRequestId String              @map("job_request_id")
+  degreeId     String              @map("degree_id")
+  createdAt    DateTime?           @default(now()) @map("created_at")
+
+  jobRequest JobRequest @relation(fields: [jobRequestId], references: [jobRequestId])
+  degree     Degree     @relation(fields: [degreeId], references: [degreeId])
+
+  @@unique([jobRequestId, degreeId])
+  @@map("job_request_degrees")
 }

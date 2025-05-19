@@ -11,6 +11,7 @@ export const authGuard = async (
     next: NextFunction
 ) => {
     try {
+        
         const token = req.headers.authorization?.split(" ")[1];
         if (!token) {
             throw new UnauthorizedError(ErrorMessage.TOKEN_MISSING);
@@ -43,8 +44,9 @@ export const authGuard = async (
 
         // Create user context based on role
         let userContext: UserContext;
-
+        console.log("user", user);
         if (!user) {
+            console.log("user not found");
             throw new UnauthorizedError();
         }
 
@@ -91,6 +93,7 @@ export const authGuard = async (
 
         // Attach user context to request
         req.user = userContext;
+        console.log(req.user)
         next();
     } catch (error) {
         next(error);

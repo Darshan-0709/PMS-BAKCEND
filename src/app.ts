@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -5,28 +6,15 @@ import rateLimit from "express-rate-limit";
 import { Request, Response } from "express";
 import authRouter from "./routes/auth.route";
 import publicRoutes from "./routes/public.route";
+import eligibilityCriteriaRoutes from "./routes/eligibilityCriteria.route";
 import { errorHandler } from "./middlewares/errorHandler.middleware";
 import { ResponseHandler } from "./utils/apiResponse";
 import { NotFoundError } from "./errors/NotFoundError";
 import { RateLimitError } from "./errors/RateLimitError";
 import prisma from "./config/prisma";
-import winston from "winston";
-
-// Logger Configuration
-const logger = winston.createLogger({
-    level: "info",
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.printf(
-            ({ timestamp, level, message }) =>
-                `${timestamp} [${level}]: ${message}`
-        )
-    ),
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: "logs/app.log" }),
-    ],
-});
+import recruiterRoutes from "./routes/recruiter.route";
+import placementCellRoutes from "./routes/placementCell.route";
+import studentRoutes from "./routes/student.route";
 
 const app = express();
 
@@ -56,6 +44,10 @@ app.use(express.json({ limit: "10kb" }));
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1", publicRoutes);
+app.use("/api/v1/recruiters", recruiterRoutes);
+app.use("/api/v1/placement_cells", placementCellRoutes);
+app.use("/api/v1/students", studentRoutes);
+app.use("/api/v1/eligibility-criteria", eligibilityCriteriaRoutes);
 
 app.get("/health", (req: Request, res: Response) => {
     res.status(200).json({ message: "Heart is betting....." });
@@ -70,12 +62,8 @@ app.use((req: Request, res: Response) => {
 app.use(errorHandler);
 
 // Database Connection
-prisma
-    .$connect()
-    .then(() => logger.info("Connected to PostgreSQL"))
-    .catch((err: Error) => {
-        logger.error(`Database connection error: ${err.message}`);
-        process.exit(1);
-    });
+prisma.$connect().catch((err: Error) => {
+    process.exit(1);
+});
 
 export default app;

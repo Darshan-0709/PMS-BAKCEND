@@ -20,7 +20,7 @@ router.get(
     authorizePlacementCellRead,
     getPlacementCellController
 );
-router.patch(
+router.put(
     "/:id",
     authGuard,
     authorizePlacementCellUpdate,

@@ -10,7 +10,7 @@ import { authGuard } from "../auth/auth.guard";
 const router = Router();
 
 router.get("/:id", authGuard, authorizeRecruiter, getRecruiterController);
-router.patch("/:id", authGuard, authorizeRecruiter, updateRecruiterController);
+router.put("/:id", authGuard, authorizeRecruiter, updateRecruiterController);
 router.delete("/:id", authGuard, authorizeRecruiter, deleteRecruiterController);
 
 export default router;
