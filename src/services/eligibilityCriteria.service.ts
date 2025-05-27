@@ -10,11 +10,11 @@ const prisma = new PrismaClient();
 
 export const createEligibilityCriteria = async (
     data: EligibilityCriteriaDto,
-    userId: string
+    recruiterId: string
 ): Promise<EligibilityCriteria> => {
     // Get recruiter ID
     const recruiter = await prisma.recruiter.findUnique({
-        where: { representativeId: userId },
+        where: { recruiterId },
     });
 
     if (!recruiter) {

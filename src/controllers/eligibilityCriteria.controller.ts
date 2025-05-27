@@ -13,6 +13,7 @@ import {
     softDeleteEligibilityCriteria,
 } from "../services/eligibilityCriteria.service";
 import { ResponseHandler } from "../utils/apiResponse";
+import { BadRequestError } from "../errors/BadRequestError";
 
 export const createEligibilityCriteriaController = async (
     req: Request,
@@ -21,15 +22,20 @@ export const createEligibilityCriteriaController = async (
 ) => {
     try {
         const validatedData = eligibilityCriteriaSchema.parse(req.body);
-        const criteria = await createEligibilityCriteria(
-            validatedData,
-            req.user!.userId
-        );
-        ResponseHandler.success(
-            res,
-            criteria,
-            "Eligibility criteria created successfully"
-        );
+        if(req.user?.role === "recruiter") {
+
+            const criteria = await createEligibilityCriteria(
+                validatedData,
+                req.user!.recruiterId
+            );
+            ResponseHandler.success(
+                res,
+                criteria,
+                "Eligibility criteria created successfully"
+            );
+        } else {
+            throw new BadRequestError("You are not authorized to create eligibility criteria");
+        }
     } catch (error) {
         next(error);
     }

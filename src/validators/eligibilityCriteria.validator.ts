@@ -11,7 +11,7 @@ export const eligibilityCriteriaSchema = z.object({
 });
 
 export const eligibilityCriteriaUpdateSchema =
-    eligibilityCriteriaSchema.partial();
+    eligibilityCriteriaSchema.partial().strip();
 
 export const eligibilityCriteriaIdSchema = z.object({
     id: z.string().uuid(),

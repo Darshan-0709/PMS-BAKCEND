@@ -45,7 +45,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1", publicRoutes);
 app.use("/api/v1/recruiters", recruiterRoutes);
-app.use("/api/v1/placement_cells", placementCellRoutes);
+app.use("/api/v1/placement-cells", placementCellRoutes);
 app.use("/api/v1/students", studentRoutes);
 app.use("/api/v1/eligibility-criteria", eligibilityCriteriaRoutes);
 
@@ -55,7 +55,7 @@ app.get("/health", (req: Request, res: Response) => {
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
-    ResponseHandler.error(res, new NotFoundError());
+    ResponseHandler.error(res, new NotFoundError("404: not found"));
 });
 
 // Error Handling

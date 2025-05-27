@@ -131,7 +131,7 @@ export function authorize<Res extends Resource>(
         const roleRules = policies[user.role]?.[resource];
         const policyFn = roleRules?.[action] as PolicyFn<Res> | undefined;
         if (!policyFn) {
-            throw new ForbiddenError("Not allowd");
+            throw new ForbiddenError();
         }
 
         let record: ResourceMap[Res] | undefined;

@@ -21,6 +21,7 @@ export const getPlacementCellById = async (placementCellId: string) => {
             placementCellName: true,
             placementCellEmail: true,
             website: true,
+            domains: true,
             placementCellDegrees: {
                 select: {
                     degree: {
@@ -31,11 +32,6 @@ export const getPlacementCellById = async (placementCellId: string) => {
                     },
                 },
             },
-            placementCellDomains: {
-                select: {
-                    domain: true,
-                },
-            },
         },
     });
 
@@ -44,8 +40,13 @@ export const getPlacementCellById = async (placementCellId: string) => {
             placementCellId: "Placement cell not found",
         });
     }
-
-    return placementCell;
+    const flattenedDegrees = placementCell.placementCellDegrees.map(
+        (d) => d.degree
+    );
+    return {
+        ...placementCell,
+        placementCellDegrees: flattenedDegrees,
+    };
 };
 
 export const updatePlacementCell = async (
@@ -70,7 +71,6 @@ async function validatePlacementCellUpdate(
             deletedAt: null,
         },
         include: {
-            placementCellDomains: { select: { domain: true } },
             placementCellDegrees: { select: { degreeId: true } },
         },
     });
@@ -145,48 +145,22 @@ async function executeUpdate(
             placementCellName: data.placementCellName,
             placementCellEmail: data.placementCellEmail,
             website: data.website,
-
+            domains: data.domains,
             // Relations
             branch: {
                 connect: { branchId: data.branchId },
             },
-
-            // Domains relationship
-            placementCellDomains: buildDomainUpdates(id, data.domains),
 
             // Degrees relationship
             placementCellDegrees: buildDegreeUpdates(id, data.degrees),
         },
         include: {
             branch: { select: { branchId: true, name: true } },
-            placementCellDomains: { select: { domain: true } },
             placementCellDegrees: {
                 select: { degree: { select: { degreeId: true, name: true } } },
             },
         },
     });
-}
-
-// Helper function to build domain update operations
-function buildDomainUpdates(placementCellId: string, domains: string[]) {
-    return {
-        // Remove domains that aren't in the new list
-        deleteMany: {
-            domain: { notIn: domains },
-        },
-
-        // Upsert domains in the new list
-        upsert: domains.map((domain) => ({
-            where: {
-                domain_placementCellId: {
-                    domain,
-                    placementCellId,
-                },
-            },
-            create: { domain },
-            update: { domain },
-        })),
-    };
 }
 
 // Helper function to build degree update operations

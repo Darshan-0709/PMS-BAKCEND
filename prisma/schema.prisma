@@ -33,7 +33,6 @@ enum JobRequestStatus {
   closed
 }
 
-
 model User {
   userId    String    @id @default(uuid()) @map("user_id")
   username  String    @db.VarChar(100)
@@ -90,6 +89,7 @@ model PlacementCell {
   isVerified         Boolean   @default(false) @map("is_verified")
   placementCellEmail String?   @db.VarChar(100)
   website            String?   @db.VarChar(100)
+  domains            String[]  @db.VarChar(100)
   createdAt          DateTime? @default(now()) @map("created_at")
   updatedAt          DateTime? @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
@@ -103,20 +103,8 @@ model PlacementCell {
   branch               Branch                @relation(fields: [branchId], references: [branchId])
   students             Student[]
   placementCellDegrees PlacementCellDegree[]
-  placementCellDomains PlacementCellDomain[]
 
   @@map("placement_cells")
-}
-
-model PlacementCellDomain {
-  id              String @id @default(uuid())
-  placementCellId String @map("placement_cell_id")
-  domain          String @db.VarChar(100)
-
-  placementCell PlacementCell @relation(fields: [placementCellId], references: [placementCellId])
-
-  @@unique([domain, placementCellId])
-  @@map("placement_cell_domains")
 }
 
 model Branch {
@@ -168,7 +156,7 @@ model Recruiter {
   representativeId String @unique @map("representative_id")
 
   // Relations
-  representative      User                 @relation(fields: [representativeId], references: [userId])
+  representative      User                  @relation(fields: [representativeId], references: [userId])
   eligibilityCriteria EligibilityCriteria[]
   jobRequests         JobRequest[]
 
@@ -197,18 +185,20 @@ model EligibilityCriteria {
 }
 
 model JobRequest {
-  jobRequestId         String          @id @default(uuid()) @map("job_request_id")
-  recruiterId          String          @map("recruiter_id")
-  title                String          @db.VarChar(100)
-  description          String?         @db.Text
-  salary               Decimal?        @db.Decimal(10, 2)
-  location             String?         @db.VarChar(255)
-  jobType              JobType         @map("job_type")
-  eligibilityCriteriaId String         @map("eligibility_criteria_id")
-  status               JobRequestStatus @default(active)
-  createdAt            DateTime?       @default(now()) @map("created_at")
-  updatedAt            DateTime?       @updatedAt @map("updated_at")
-  deletedAt            DateTime?       @map("deleted_at")
+  jobRequestId          String           @id @default(uuid()) @map("job_request_id")
+  recruiterId           String           @map("recruiter_id")
+  title                 String           @db.VarChar(100)
+  description           String?          @db.Text
+  salary                Decimal?         @db.Decimal(10, 2)
+  stipend               Decimal?         @db.Decimal(10, 2)
+  location              String?          @db.VarChar(255)
+  jobType               JobType          @map("job_type")
+  eligibilityCriteriaId String           @map("eligibility_criteria_id")
+  status                JobRequestStatus @default(active)
+  allowAllDegrees       Boolean          @default(false) @map("allow_all_degrees")
+  createdAt             DateTime?        @default(now()) @map("created_at")
+  updatedAt             DateTime?        @updatedAt @map("updated_at")
+  deletedAt             DateTime?        @map("deleted_at")
 
   // Relations
   recruiter           Recruiter           @relation(fields: [recruiterId], references: [recruiterId])
@@ -219,10 +209,10 @@ model JobRequest {
 }
 
 model JobRequestDegree {
-  id           String              @id @default(uuid())
-  jobRequestId String              @map("job_request_id")
-  degreeId     String              @map("degree_id")
-  createdAt    DateTime?           @default(now()) @map("created_at")
+  id           String    @id @default(uuid())
+  jobRequestId String    @map("job_request_id")
+  degreeId     String    @map("degree_id")
+  createdAt    DateTime? @default(now()) @map("created_at")
 
   jobRequest JobRequest @relation(fields: [jobRequestId], references: [jobRequestId])
   degree     Degree     @relation(fields: [degreeId], references: [degreeId])

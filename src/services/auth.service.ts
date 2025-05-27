@@ -13,14 +13,18 @@ import {
 import { ValidationError } from "../errors/ValidationError";
 import { Response } from "express"; // Ensure this is imported
 
-export const validateUserData = async (username: string, email: string, password: string, confirmPassword: string) => {
-
-    if(password !== confirmPassword){
+export const validateUserData = async (
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string
+) => {
+    if (password !== confirmPassword) {
         throw new ValidationError({
-            confirmPassword: "Passwords do not match"
+            confirmPassword: "Passwords do not match",
         });
     }
-    
+
     const existingUser = await prisma.user.findFirst({
         where: {
             OR: [{ email }, { username }],
@@ -46,7 +50,7 @@ type ProcessedRegisterInput = Omit<RegisterInput, "password"> & {
 };
 
 export const registerUser = async (userData: RegisterInput) => {
-    const { username, email, role, password, confirmPassword} = userData;
+    const { username, email, role, password, confirmPassword } = userData;
     await validateUserData(username, email, password, confirmPassword);
     const saltRounds = 10;
 
@@ -56,7 +60,6 @@ export const registerUser = async (userData: RegisterInput) => {
         ...userData,
         password: hashedPassword,
     };
-
 
     switch (role) {
         case "student": {
@@ -109,7 +112,6 @@ const validateStudentData = async (studentData: {
             placementCellDegrees: {
                 include: { degree: true },
             },
-            placementCellDomains: true,
         },
     });
 
@@ -135,9 +137,7 @@ const validateStudentData = async (studentData: {
         });
     }
 
-    const domainAllowed = placementCell.placementCellDomains.some(
-        (placementCellDomain) => {console.log(placementCellDomain.domain, studentDomain);return placementCellDomain.domain === studentDomain}
-    );
+    const domainAllowed = placementCell.domains.includes(studentDomain);
 
     if (!domainAllowed) {
         throw new ValidationError({
@@ -298,14 +298,8 @@ const registerPlacementCell = async (
                 branchId: dbBranch.branchId,
                 placementCellEmail,
                 website,
+                domains,
             },
-        });
-
-        await prisma.placementCellDomain.createMany({
-            data: domains.map((domain) => ({
-                placementCellId: placementCell.placementCellId,
-                domain,
-            })),
         });
 
         if (degrees.length > 0) {

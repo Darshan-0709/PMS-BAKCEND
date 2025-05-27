@@ -55,6 +55,7 @@ export const getPlacementCellForStudentRegister = async (
             select: {
                 placementCellId: true,
                 placementCellName: true,
+                domains: true,
                 branch: {
                     select: {
                         branchId: true,
@@ -71,11 +72,6 @@ export const getPlacementCellForStudentRegister = async (
                         },
                     },
                 },
-                placementCellDomains: {
-                    select: {
-                        domain: true,
-                    },
-                },
             },
         });
 
@@ -83,10 +79,7 @@ export const getPlacementCellForStudentRegister = async (
             ...cell,
             placementCellDegrees: cell.placementCellDegrees.map(
                 (d) => d.degree
-            ),
-            placementCellDomains: cell.placementCellDomains.map(
-                (domain) => domain.domain
-            ),
+            )
         }));
 
         ResponseHandler.fetched(res, placementCellsFlatten);

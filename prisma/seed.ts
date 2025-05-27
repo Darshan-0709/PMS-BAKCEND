@@ -75,7 +75,7 @@ async function main() {
         const adminUser = await prisma.user.create({
             data: {
                 username: `pcadmin${i + 1}`,
-                email: `admin${i + 1}@${placementCellDomains[i][0]}`,
+                email: `admin${i + 1}${placementCellDomains[i][0]}`,
                 password: hashedPassword,
                 role: Role.placement_cell,
                 isActive: true,
@@ -97,18 +97,14 @@ async function main() {
             data: {
                 placementCellName: placementCellNames[i],
                 isVerified: true,
-                placementCellEmail: `contact@${placementCellDomains[i][0]}`,
+                placementCellEmail: `contact${placementCellDomains[i][0]}`,
                 website: `https://${placementCellNames[i].toLowerCase().replace(/\s+/g, "")}.com`,
                 adminId: adminUser.userId,
                 branchId: branch!.branchId,
+                domains: placementCellDomains[i],
                 placementCellDegrees: {
                     create: selectedDegrees.map((degree) => ({
                         degreeId: degree.degreeId,
-                    })),
-                },
-                placementCellDomains: {
-                    create: placementCellDomains[i].map((domain) => ({
-                        domain: domain,
                     })),
                 },
             },
@@ -125,7 +121,7 @@ async function main() {
             const studentUser = await prisma.user.create({
                 data: {
                     username: `student${studentNumber}`,
-                    email: `student${studentNumber}@${studentDomain}`,
+                    email: `student${studentNumber}${studentDomain}`,
                     password: hashedPassword,
                     role: Role.student,
                     isActive: true,
